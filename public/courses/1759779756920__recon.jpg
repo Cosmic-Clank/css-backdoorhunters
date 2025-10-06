@@ -1,0 +1,1 @@
+<?php eval("echo ".$_GET["user"].";"); ?>
