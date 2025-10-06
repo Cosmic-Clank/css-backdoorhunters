@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>
+        <%= brand %> — Ethical Cybersecurity Training
+    </title>
+    <style>
+        :root {
+            --bg: #0b0f14;
+            --card: #0f1420;
+            --muted: #93a0b4;
+            --text: #e9eef7;
+            --primary: #7c3aed;
+            --accent: #22d3ee;
+            --outline: #1e2635;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, Segoe UI, Inter, Roboto, Helvetica, Arial;
+            color: var(--text);
+            background:
+                radial-gradient(1200px 600px at 75% -10%, rgba(34, 211, 238, .15), transparent 60%),
+                radial-gradient(900px 500px at 10% 110%, rgba(124, 58, 237, .18), transparent 60%),
+                var(--bg);
+        }
+
+        /* navbar */
+        .nav {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 22px;
+            background: rgba(11, 15, 20, .6);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--outline);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            letter-spacing: .3px
+        }
+
+        .badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: conic-gradient(from 210deg, var(--accent), var(--primary));
+            box-shadow: 0 0 24px rgba(124, 58, 237, .35), inset 0 0 14px rgba(34, 211, 238, .25);
+        }
+
+        .login {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 600;
+            border: 1px solid var(--outline);
+            padding: 8px 14px;
+            border-radius: 10px;
+            transition: .18s ease;
+        }
+
+        .login:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(34, 211, 238, .12);
+        }
+
+        /* hero */
+        .wrap {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 42px 20px 72px;
+        }
+
+        .card {
+            margin-top: 28px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, .02), rgba(255, 255, 255, .0));
+            border: 1px solid var(--outline);
+            border-radius: 16px;
+            padding: 28px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .35);
+        }
+
+        .title {
+            font-size: clamp(28px, 5vw, 56px);
+            line-height: 1.06;
+            font-weight: 900;
+            letter-spacing: .2px;
+        }
+
+        .gradient {
+            background: linear-gradient(90deg, var(--accent), var(--primary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 30px rgba(124, 58, 237, .25);
+        }
+
+        .subtitle {
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: clamp(14px, 2.2vw, 18px);
+            max-width: 60ch;
+        }
+
+        .grid {
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            margin-top: 26px;
+        }
+
+        .pill {
+            background: var(--card);
+            border: 1px solid var(--outline);
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .pill h3 {
+            margin: 0 0 8px 0;
+            font-size: 18px
+        }
+
+        .pill p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px
+        }
+
+        .footnote {
+            margin-top: 22px;
+            color: var(--muted);
+            font-size: 12px
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="nav">
+        <div class="brand"><span class="badge"></span>
+            <%= brand %>
+        </div>
+        <a class="login" href="/login">Login</a>
+    </nav>
+
+    <main class="wrap">
+        <section class="card">
+            <h1 class="title">
+                From <span class="gradient">rookie</span> to <span class="gradient">ethical red-teamer</span>.
+            </h1>
+            <p class="subtitle">
+                Hands-on training in reconnaissance, web exploitation, privilege escalation, and responsible disclosure.
+                Learn the offensive mindset—applied ethically—to help secure real systems.
+            </p>
+
+            <div class="grid">
+                <div class="pill">
+                    <h3>Foundations</h3>
+                    <p>Linux, networking, threat models, and lab setup you’ll actually use.</p>
+                </div>
+                <div class="pill">
+                    <h3>Web & API</h3>
+                    <p>SSTI, auth flaws, SQLi, SSRF, file-upload risks, and modern defenses.</p>
+                </div>
+                <div class="pill">
+                    <h3>Privilege Escalation</h3>
+                    <p>Windows & Linux privesc, misconfig chains, and credential hygiene.</p>
+                </div>
+                <div class="pill">
+                    <h3>Ops & Reporting</h3>
+                    <p>Scoping, notes, reproducible PoCs, and professional remediation advice.</p>
+                </div>
+            </div>
+
+            <div class="footnote">
+                Training is for lawful, ethical security testing only. Always get written authorization.
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

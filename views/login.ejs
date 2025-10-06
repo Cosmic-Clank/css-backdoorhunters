@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>
+        <%= brand %> — Login
+    </title>
+    <style>
+        :root {
+            --bg: #0b0f14;
+            --card: #101726;
+            --muted: #94a1b2;
+            --text: #e9eef7;
+            --primary: #7c3aed;
+            --accent: #22d3ee;
+            --outline: #1e2635;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: Inter, ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 22px;
+            border-bottom: 1px solid var(--outline);
+            background: rgba(16, 23, 38, .6);
+            backdrop-filter: blur(8px);
+        }
+
+        .brand {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-weight: 800
+        }
+
+        .badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background:
+                conic-gradient(from 210deg, var(--accent), var(--primary));
+        }
+
+        .wrap {
+            max-width: 420px;
+            margin: 64px auto;
+            padding: 0 16px
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--outline);
+            border-radius: 16px;
+            padding: 24px
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 24px
+        }
+
+        p {
+            margin: 0 0 18px 0;
+            color: var(--muted)
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            margin: 12px 0 6px 0;
+            color: #c8d1e1
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--outline);
+            background: #0e1524;
+            color: var(--text);
+            outline: none
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(34, 211, 238, .12)
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 12px 0
+        }
+
+        .remember {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .btn {
+            width: 100%;
+            margin-top: 10px;
+            background: linear-gradient(90deg, var(--accent), var(--primary));
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-weight: 700;
+            cursor: pointer
+        }
+
+        .btn:hover {
+            opacity: .95
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="nav">
+        <div class="brand"><span class="badge"></span>
+            <%= brand %>
+        </div>
+        <a href="/" style="color:#e9eef7;text-decoration:none;font-weight:600">Home</a>
+    </nav>
+
+    <main class="wrap">
+        <div class="card">
+            <h1>Login</h1>
+            <p>Use your training portal credentials.</p>
+
+            <form action="/login" method="POST" autocomplete="off">
+                <label for="username">Username</label>
+                <input id="username" name="username" type="text" required />
+
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" required />
+
+                <div class="row">
+                    <label class="remember">
+                        <input type="checkbox" name="remember" value="true" />
+                        Remember me
+                    </label>
+                </div>
+
+                <button class="btn" type="submit">Sign in</button>
+                <div class="hint" style="text-align:center;color:#94a1b2;margin-top:10px">
+                    Don't have an account? <a href="/register">Register</a>
+                </div>
+            </form>
+        </div>
+    </main>
+</body>
+
+</html>

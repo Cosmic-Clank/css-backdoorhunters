@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Dashboard</title>
+    <style>
+        :root {
+            --bg: #0b0f14;
+            --panel: #0f1420;
+            --border: #1e2635;
+            --text: #e9eef7;
+            --muted: #93a0b4;
+            --primary: #7c3aed;
+            --accent: #22d3ee;
+            --chip: #1a2434;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
+        body {
+            margin: 0;
+            background:
+                radial-gradient(1200px 600px at 75% -10%, rgba(34, 211, 238, .12), transparent 60%),
+                radial-gradient(900px 500px at 10% 110%, rgba(124, 58, 237, .15), transparent 60%),
+                var(--bg);
+            color: var(--text);
+            font-family: Inter, ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial;
+        }
+
+        /* header */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(11, 15, 20, .6);
+            backdrop-filter: blur(8px);
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800
+        }
+
+        .badge {
+            width: 24px;
+            height: 24px;
+            border-radius: 8px;
+            background: conic-gradient(from 210deg, var(--accent), var(--primary));
+            box-shadow: 0 0 20px rgba(124, 58, 237, .35), inset 0 0 12px rgba(34, 211, 238, .25);
+        }
+
+        .user {
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        /* layout */
+        .shell {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 18px;
+            max-width: 1200px;
+            margin: 18px auto;
+            padding: 0 18px
+        }
+
+        .side {
+            position: sticky;
+            top: 62px;
+            align-self: start;
+            /* stick under header */
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 12px;
+        }
+
+        .tabbtn {
+            width: 100%;
+            text-align: left;
+            border: 1px solid var(--border);
+            background: #0d1320;
+            color: var(--text);
+            padding: 10px 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: .15s ease;
+        }
+
+        .tabbtn:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(34, 211, 238, .10)
+        }
+
+        .tabbtn.active {
+            border-color: var(--accent)
+        }
+
+        .chip {
+            display: inline-block;
+            background: var(--chip);
+            color: #cfe7ff;
+            border: 1px solid var(--border);
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 999px
+        }
+
+        .main {
+            background: linear-gradient(180deg, rgba(255, 255, 255, .02), rgba(255, 255, 255, .0));
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .h2 {
+            margin: 2px 0 10px 0;
+            font-size: 20px;
+            font-weight: 800
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        /* courses */
+        .courselist {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            margin-top: 12px
+        }
+
+        .course {
+            background: #0e1524;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .course h3 {
+            margin: 0 0 6px 0;
+            font-size: 16px
+        }
+
+        .course p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .tag {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: #0c1220
+        }
+
+        /* profile */
+        .profile {
+            display: none
+        }
+
+        .profile.active {
+            display: block
+        }
+
+        .courses.active {
+            display: block
+        }
+
+        .courses {
+            display: none
+        }
+
+        .upload {
+            margin-top: 12px;
+            background: #0e1524;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            background: #0b101b;
+            color: var(--text)
+        }
+
+        .btn {
+            margin-top: 10px;
+            background: linear-gradient(90deg, var(--accent), var(--primary));
+            color: #fff;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700
+        }
+    </style>
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="brand"><span class="badge"></span> Backdoor Hunters</div>
+        <div class="user">Signed in as <b>
+                <%= user.username %>
+            </b></div>
+    </header>
+
+    <div class="shell">
+        <aside class="side">
+            <button id="tab-courses" class="tabbtn">
+                📚 <span>Courses</span>
+            </button>
+            <button id="tab-profile" class="tabbtn">
+                👤 <span>Profile</span>
+            </button>
+            <% if (canSeeUsersTab) { %>
+                <button id="tab-users" class="tabbtn">
+                    👥 <span>Users</span>
+                </button>
+                <% } %>
+                    <% if (canManageCourses) { %>
+                        <a id="link-manage" class="tabbtn" href="<%= manageLink %>">
+                            🛠️ <span>Manage Courses</span>
+                        </a>
+                        <% } %>
+
+
+
+                            <form method="POST" action="/logout" style="margin-top:6px">
+                                <button class="tabbtn" type="submit">🚪 Logout</button>
+                            </form>
+        </aside>
+
+        <main class="main">
+            <!-- Courses tab -->
+            <section id="pane-courses" class="courses">
+                <div class="h2">Courses</div>
+                <div class="muted">Pick a track to start your journey.</div>
+
+                <div class="courselist">
+                    <% for (const c of courses) { %>
+                        <article class="course">
+                            <div
+                                style="aspect-ratio: 16/9; border-radius:10px; overflow:hidden; border:1px solid var(--border); background:#0c1220;">
+                                <img src="<%= c.image_path %>" alt="<%= c.title %>"
+                                    style="width:100%; height:100%; object-fit:cover; display:block;">
+                            </div>
+                            <h3 style="margin:10px 0 6px 0; font-size:16px">
+                                <%= c.title %>
+                            </h3>
+                            <p>
+                                <%= c.summary %>
+                            </p>
+                            <div class="tag" style="text-transform:capitalize;">
+                                <%= c.level %>
+                            </div>
+                        </article>
+                        <% } %>
+                </div>
+            </section>
+
+            <!-- Profile tab -->
+            <section id="pane-profile" class="profile">
+                <div class="h2">Profile</div>
+                <div class="muted">Upload a profile picture (PNG/JPG). (Not wired yet)</div>
+
+                <form class="upload" method="POST" action="/profile/photo" enctype="multipart/form-data">
+                    <input type="file" name="avatar" accept="image/png,image/jpeg" />
+                    <button class="btn" type="submit">Upload</button>
+                </form>
+            </section>
+            <!-- Users tab (admin/dev only) -->
+            <section id="pane-users" class="users" style="display:none">
+                <div class="h2">Users</div>
+                <div class="muted">All accounts (hashed passwords shown for demo).</div>
+                <div style="overflow:auto; margin-top:12px">
+                    <table style="width:100%; border-collapse:collapse; font-size:13px">
+                        <thead>
+                            <tr style="text-align:left; border-bottom:1px solid var(--border)">
+                                <th style="padding:8px 6px">ID</th>
+                                <th style="padding:8px 6px">Username</th>
+                                <th style="padding:8px 6px">Role</th>
+                                <th style="padding:8px 6px">Password Hash</th>
+                                <th style="padding:8px 6px">Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% for (const u of users) { %>
+                                <tr style="border-bottom:1px solid var(--border)">
+                                    <td style="padding:8px 6px">
+                                        <%= u.id %>
+                                    </td>
+                                    <td style="padding:8px 6px"><code><%= u.username %></code></td>
+                                    <td style="padding:8px 6px"><span class="chip">
+                                            <%= u.role %>
+                                        </span></td>
+                                    <td style="padding:8px 6px"><code><%= u.pass_hash %></code></td>
+                                    <td style="padding:8px 6px">
+                                        <%= u.created_at %>
+                                    </td>
+                                </tr>
+                                <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        const btnCourses = document.getElementById('tab-courses');
+        const btnProfile = document.getElementById('tab-profile');
+        const btnUsers = document.getElementById('tab-users');   // may be null
+        const btnManage = document.getElementById('tab-manage');  // may be null
+
+        const paneCourses = document.getElementById('pane-courses');
+        const paneProfile = document.getElementById('pane-profile');
+        const paneUsers = document.getElementById('pane-users');   // may be null
+        const paneManage = document.getElementById('pane-manage');  // may be null
+
+        function show(tab) {
+            const isCourses = tab === 'courses';
+            const isProfile = tab === 'profile';
+            const isUsers = tab === 'users';
+            const isManage = tab === 'manage-courses';
+
+            // toggle panes
+            paneCourses && (paneCourses.style.display = isCourses ? 'block' : 'none');
+            paneProfile && (paneProfile.style.display = isProfile ? 'block' : 'none');
+            paneUsers && (paneUsers.style.display = isUsers ? 'block' : 'none');
+            paneManage && (paneManage.style.display = isManage ? 'block' : 'none');
+
+            // active styles
+            btnCourses && btnCourses.classList.toggle('active', isCourses);
+            btnProfile && btnProfile.classList.toggle('active', isProfile);
+            btnUsers && btnUsers.classList.toggle('active', isUsers);
+            btnManage && btnManage.classList.toggle('active', isManage);
+
+            // keep URL in sync
+            const url = new URL(window.location);
+            url.searchParams.set('tab', tab);
+            history.replaceState(null, '', url);
+        }
+
+        // initial tab from server
+        show('<%= tab %>');
+
+        // wire clicks
+        btnCourses && btnCourses.addEventListener('click', () => show('courses'));
+        btnProfile && btnProfile.addEventListener('click', () => show('profile'));
+        btnUsers && btnUsers.addEventListener('click', () => show('users'));
+        btnManage && btnManage.addEventListener('click', () => show('manage-courses'));
+    </script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>
+        <%= brand %> — Register
+    </title>
+    <style>
+        :root {
+            --bg: #0b0f14;
+            --card: #101726;
+            --muted: #94a1b2;
+            --text: #e9eef7;
+            --primary: #7c3aed;
+            --accent: #22d3ee;
+            --outline: #1e2635;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: Inter, ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial;
+        }
+
+        a {
+            color: #cfe7ff
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 22px;
+            border-bottom: 1px solid var(--outline);
+            background: rgba(16, 23, 38, .6);
+            backdrop-filter: blur(8px);
+        }
+
+        .brand {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            font-weight: 800
+        }
+
+        .badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background:
+                conic-gradient(from 210deg, var(--accent), var(--primary));
+        }
+
+        .wrap {
+            max-width: 420px;
+            margin: 64px auto;
+            padding: 0 16px
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--outline);
+            border-radius: 16px;
+            padding: 24px
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 24px
+        }
+
+        p {
+            margin: 0 0 18px 0;
+            color: var(--muted)
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            margin: 12px 0 6px 0;
+            color: #c8d1e1
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--outline);
+            background: #0e1524;
+            color: var(--text);
+            outline: none
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(34, 211, 238, .12)
+        }
+
+        .btn {
+            width: 100%;
+            margin-top: 14px;
+            background: linear-gradient(90deg, var(--accent), var(--primary));
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-weight: 700;
+            cursor: pointer
+        }
+
+        .err {
+            background: #2a3142;
+            border: 1px solid #3a445b;
+            color: #ffd3d3;
+            padding: 10px 12px;
+            border-radius: 10px;
+            margin-bottom: 10px
+        }
+
+        .hint {
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 12px;
+            text-align: center
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="nav">
+        <div class="brand"><span class="badge"></span>
+            <%= brand %>
+        </div>
+        <div><a href="/login">Login</a></div>
+    </nav>
+
+    <main class="wrap">
+        <div class="card">
+            <h1>Create an account</h1>
+            <p>Register to access your dashboard.</p>
+
+            <% if (error) { %>
+                <div class="err">
+                    <%= error %>
+                </div>
+                <% } %>
+
+                    <form action="/register" method="POST" autocomplete="off">
+                        <label for="username">Username</label>
+                        <input id="username" name="username" type="text" required value="<%= values.username %>" />
+
+                        <label for="password">Password</label>
+                        <input id="password" name="password" type="password" required />
+
+                        <label for="confirm">Confirm password</label>
+                        <input id="confirm" name="confirm" type="password" required />
+
+                        <button class="btn" type="submit">Create account</button>
+                    </form>
+
+                    <div class="hint">Already have an account? <a href="/login">Login</a></div>
+        </div>
+    </main>
+</body>
+
+</html>

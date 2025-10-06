@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Method Not Allowed</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+        :root {
+            --bg: #0b0f14;
+            --panel: #101622;
+            --panel-2: #0f1420;
+            --border: #1f2a3b;
+            --text: #e9eef7;
+            --muted: #9aa7bd;
+            --danger: #f05251;
+            --danger-ink: #ffb8b5;
+            --chip: #232c3d;
+            --code: #0a0f15;
+            --code-border: #1b2433;
+            --hl: #2a3142;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: Inter, system-ui, Segoe UI, Roboto, Ubuntu, Helvetica, Arial
+        }
+
+        .wrap {
+            max-width: 1180px;
+            margin: 28px auto;
+            padding: 0 18px
+        }
+
+        /* header line: red dot + title + request pill */
+        .head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px
+        }
+
+        .h1 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 26px
+        }
+
+        .h1 .dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 999px;
+            background: var(--danger);
+            box-shadow: 0 0 0 4px rgba(240, 82, 81, .15)
+        }
+
+        .pill {
+            background: var(--chip);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 12px
+        }
+
+        /* exception + message card */
+        .note {
+            background: var(--panel-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 18px
+        }
+
+        .exc {
+            display: inline-block;
+            background: #2b1212;
+            border: 1px solid #5a2626;
+            color: var(--danger-ink);
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px
+        }
+
+        .msg {
+            margin-top: 10px
+        }
+
+        /* two-column area */
+        .grid {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 18px;
+            margin-top: 18px
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--panel-2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 8px 10px;
+            font-size: 12px;
+            color: var(--text)
+        }
+
+        .chev {
+            width: 12px;
+            height: 12px;
+            border-right: 2px solid var(--text);
+            border-bottom: 2px solid var(--text);
+            transform: rotate(-45deg)
+        }
+
+        .stackitem {
+            margin-top: 10px;
+            background: var(--code);
+            border: 1px solid var(--code-border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-family: ui-monospace, Consolas, Menlo, monospace;
+            font-size: 12px
+        }
+
+        /* code pane */
+        .codewrap {
+            position: relative
+        }
+
+        pre {
+            margin: 0;
+            background: var(--code);
+            border: 1px solid var(--code-border);
+            border-radius: 10px;
+            padding: 14px 0;
+            overflow: auto;
+            font-family: ui-monospace, Consolas, Menlo, monospace;
+            font-size: 12.5px;
+            line-height: 1.55
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            padding: 0 14px
+        }
+
+        .ln {
+            width: 38px;
+            text-align: right;
+            color: var(--muted)
+        }
+
+        .src {
+            flex: 1
+        }
+
+        .hl {
+            background: var(--hl)
+        }
+
+        .filecap {
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 12px
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="head">
+            <div class="h1"><span class="dot"></span>Method Not Allowed</div>
+            <div class="pill">
+                <%= requestBadge %> • PHP <%= phpVersion %> — Laravel <%= laravelVersion %>
+            </div>
+        </div>
+
+        <div class="note">
+            <span class="exc">
+                <%= exceptionFqcn %>
+            </span>
+            <div class="msg">
+                <%= message %>
+            </div>
+        </div>
+
+        <div class="grid">
+            <!-- Left: frames -->
+            <div class="card">
+
+                <div class="stackitem">
+                    <%= collapsedCount %> vendor frames collapsed
+                </div>
+                <div class="stackitem">
+                    <%= codeFileLabel %>:<%= codeFileLine %>
+                </div>
+            </div>
+
+            <!-- Right: code with highlighted line -->
+            <div class="card codewrap">
+                <pre>
+<% for (let i=0;i<code.length;i++){ const n = codeStart + i; %>
+<div class="row <%= n===highlight ? 'hl' : '' %>">
+  <div class="ln"><%= n %></div>
+  <div class="src"><%= code[i] %></div>
+</div>
+<% } %>
+        </pre>
+                <div class="filecap">
+                    <%= codeFileLabel %>:<%= codeFileLine %>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
