@@ -240,9 +240,9 @@
             <button id="tab-courses" class="tabbtn">
                 📚 <span>Courses</span>
             </button>
-            <!-- <button id="tab-profile" class="tabbtn">
+            <button id="tab-profile" class="tabbtn">
                 👤 <span>Profile</span>
-            </button> -->
+            </button>
             <% if (canSeeUsersTab) { %>
                 <button id="tab-users" class="tabbtn">
                     👥 <span>Users</span>
@@ -290,15 +290,35 @@
             </section>
 
             <!-- Profile tab -->
-            <!-- <section id="pane-profile" class="profile">
+            <section id="pane-profile" class="profile">
                 <div class="h2">Profile</div>
-                <div class="muted">Upload a profile picture (PNG/JPG). (Not wired yet)</div>
+                <div class="muted">Account details</div>
 
-                <form class="upload" method="POST" action="/profile/photo" enctype="multipart/form-data">
-                    <input type="file" name="avatar" accept="image/png,image/jpeg" />
-                    <button class="btn" type="submit">Upload</button>
-                </form>
-            </section> -->
+                <div
+                    style="margin-top:12px;border:1px solid var(--border);border-radius:12px;padding:14px;background:#0f1420">
+                    <div style="display:grid;grid-template-columns:160px 1fr;gap:10px 14px;align-items:center">
+                        <div class="muted">Username</div>
+                        <div>
+                            <%= user.username %>
+                        </div>
+
+                        <div class="muted">Role</div>
+                        <div style="text-transform:capitalize;">
+                            <%= user.role || 'user' %>
+                        </div>
+
+                        <div class="muted">Created</div>
+                        <div>
+                            <% if (user.created_at) { %>
+                                <%= new Date(user.created_at).toISOString().slice(0,10) %>
+                                    <% } else { %>
+                                        —
+                                        <% } %>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- Users tab (admin/dev only) -->
             <section id="pane-users" class="users" style="display:none">
                 <div class="h2">Users</div>
