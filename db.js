@@ -35,8 +35,13 @@ function ensureUser(username, pwd, role = "user") {
 		console.log(`[db] seeded -> ${username}/${pwd} (role=${role}, md5=${hash})`);
 	}
 }
+
 ensureUser("admin", "admin123", "admin");
 ensureUser("devuser", "dev123", "dev");
+ensureUser("alice", "alicepass", "user");
+ensureUser("bob", "bobpass", "user");
+ensureUser("charlie", "charliepass", "user");
+ensureUser("eve", "evepass", "dev");
 
 function findUser(username) {
 	return db.prepare("SELECT id, username, pass_hash, role, created_at FROM users WHERE username=?").get(username);
