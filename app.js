@@ -5,6 +5,7 @@ const cookieParser = require("cookie-parser");
 const app = express();
 const net = require("net");
 const { spawn } = require("child_process");
+const morgan = require("morgan");
 const { findUser, listUsers, verifyPassword, registerUser, listCourses, deleteCourseById, findCourseById, createCourse } = require("./db");
 const fs = require("fs");
 const Busboy = require("busboy");
@@ -15,6 +16,19 @@ app.use((req, res, next) => {
 	res.setHeader("X-Powered-By", "PHP/8.2.12");
 	next();
 });
+
+// ----- Logging -----
+const accessLog = fs.createWriteStream(path.join("./log", "access.log"), { flags: "a" });
+
+const errorLog = fs.createWriteStream(path.join("./log", "error.log"), { flags: "a" });
+
+app.use((err, req, res, next) => {
+	const line = `${new Date().toISOString()} ${req.ip} "${req.method} ${req.originalUrl} HTTP/${req.httpVersion}" ${res.statusCode} - ERROR: ${err?.message || err}\n`;
+	errorLog.write(line);
+	next(err);
+});
+
+app.use(morgan("combined", { stream: accessLog }));
 
 // ----- Views / static / parsing -----
 app.set("view engine", "ejs");
@@ -662,4 +676,4 @@ app.use((req, res) => {
 });
 
 const PORT = 80;
-app.listen(PORT, () => console.log(`Lab up on http://0.0.0.0:${PORT}`));
+app.listen(PORT, () => console.log(`Webapp running on http://127.0.0.1:${PORT}`));
